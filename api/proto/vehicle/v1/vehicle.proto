@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package vehicle.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/Fi44er/synthcity/api/gen/go/vehicle/v1;vehiclev1";
+
+service VehicleService {
+  // Создать новые машины в симуляции
+  rpc SpawnVehicles(SpawnVehiclesRequest) returns (SpawnVehiclesResponse);
+}
+
+message SpawnVehiclesRequest {
+  int32 count = 1;
+  common.v1.Coordinates area_center = 2;
+}
+
+message SpawnVehiclesResponse {
+  repeated string vehicle_ids = 1;
+}

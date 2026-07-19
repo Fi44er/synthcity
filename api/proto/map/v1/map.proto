@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package map.v1;
+
+option go_package = "github.com/Fi44er/synthcity/api/gen/go/map/v1;mapv1";
+
+import "google/api/annotations.proto";
+
+
+
+service MapService {
+    rpc GetRoute(GetRouteRequest) returns (GetRouteResponse) {
+        option (google.api.http) = {
+          post: "/api/v1/map/route"
+          body: "*"
+        };
+    }
+  // Поиск ближайшего узла графа к GPS координате
+  // rpc GetNearestNode(GetNearestNodeRequest) returns (GetNearestNodeResponse);
+  // // Информация о перекрестке (для светофоров и маневров)
+  // rpc GetJunctionInfo(GetJunctionInfoRequest) returns (GetJunctionInfoResponse);
+}
+
+message GetRouteRequest {
+  LatLng start = 1;
+  LatLng end = 2;
+}
+
+message Route {
+  repeated LatLng points = 1;      // Геометрия пути для отрисовки
+  repeated int64 node_ids = 2;      // Цепочка узлов для логики движения машин
+  double distance_meters = 3;       // Общая длина пути
+  double duration_seconds = 4;      // Расчетное время в пути
+}
+
+message GetRouteResponse {
+  repeated LatLng points = 1;
+}
+
+message LatLng {
+  double lat = 1;
+  double lon = 2;
+}

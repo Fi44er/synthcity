@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package common.v1;
+
+option go_package = "github.com/Fi44er/synthcity/api/gen/go/common/v1;commonv1";
+
+message Coordinates {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+enum EntityStatus {
+  ENTITY_STATUS_UNSPECIFIED = 0;
+  ENTITY_STATUS_ACTIVE = 1;
+  ENTITY_STATUS_INACTIVE = 2;
+  ENTITY_STATUS_ERROR = 3;
+}

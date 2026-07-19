@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package traffic.v1;
+
+import "common/v1/common.proto";
+
+option go_package = "github.com/Fi44er/synthcity/api/gen/go/traffic/v1;trafficv1";
+
+service TrafficService {
+  // Запрос на проезд перекрестка
+  rpc CheckPermission(CheckPermissionRequest) returns (CheckPermissionResponse);
+  // Получить состояние всех светофоров
+  rpc GetTrafficLights(GetTrafficLightsRequest) returns (GetTrafficLightsResponse);
+}
+
+enum LightState {
+  LIGHT_STATE_RED_UNSPECIFIED = 0;
+  LIGHT_STATE_YELLOW = 1;
+  LIGHT_STATE_GREEN = 2;
+}
+
+message TrafficLight {
+  string id = 1;
+  common.v1.Coordinates location = 2;
+  LightState current_state = 3;
+}
+
+message CheckPermissionRequest {
+  string junction_id = 1;
+  string vehicle_id = 2;
+}
+
+message CheckPermissionResponse {
+  bool can_proceed = 1;
+}
+
+message GetTrafficLightsRequest {}
+message GetTrafficLightsResponse {
+  repeated TrafficLight lights = 1;
+}
