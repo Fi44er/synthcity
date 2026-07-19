@@ -1,0 +1,209 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "vehicle/v1/vehicle.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "VehicleService",
+      "x-displayName": "VehicleService"
+    },
+    {
+      "name": "TrafficService",
+      "x-displayName": "TrafficService"
+    },
+    {
+      "name": "MapService",
+      "x-displayName": "MapService"
+    },
+    {
+      "name": "HelloService",
+      "x-displayName": "HelloService"
+    }
+  ],
+  "paths": {
+    "/api/v1/map/route": {
+      "servers": [],
+      "post": {
+        "operationId": "MapService_GetRoute",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v1GetRouteResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/rpcStatus"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/v1GetRouteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": [
+          "MapService"
+        ]
+      }
+    },
+    "/api/v1/say-hi/{name}": {
+      "servers": [],
+      "get": {
+        "operationId": "HelloService_SayHi",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/helloHelloResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/rpcStatus"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "HelloService"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "protobufAny": {
+        "type": "object",
+        "properties": {
+          "@type": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {}
+      },
+      "rpcStatus": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/protobufAny"
+            }
+          }
+        }
+      },
+      "v1GetRouteRequest": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "$ref": "#/components/schemas/v1LatLng"
+          },
+          "end": {
+            "$ref": "#/components/schemas/v1LatLng"
+          }
+        }
+      },
+      "v1GetRouteResponse": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/v1LatLng"
+            }
+          }
+        }
+      },
+      "v1LatLng": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "format": "double"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "helloHelloResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "x-tagGroups": [
+    {
+      "name": "vehicle/v1/vehicle.proto",
+      "tags": [
+        "VehicleService"
+      ]
+    },
+    {
+      "name": "traffic/v1/traffic.proto",
+      "tags": [
+        "TrafficService"
+      ]
+    },
+    {
+      "name": "map/v1/map.proto",
+      "tags": [
+        "MapService"
+      ]
+    },
+    {
+      "name": "test/v1/test.proto",
+      "tags": [
+        "HelloService"
+      ]
+    }
+  ]
+}
