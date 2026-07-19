@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  nats: { extends: { file: docker-compose.infra.yaml, service: nats } }
+  redis: { extends: { file: docker-compose.infra.yaml, service: redis } }
+  postgres: { extends: { file: docker-compose.infra.yaml, service: postgres } }
+  otel-collector: { extends: { file: docker-compose.infra.yaml, service: otel-collector } }
+  loki: { extends: { file: docker-compose.infra.yaml, service: loki } }
+  tempo: { extends: { file: docker-compose.infra.yaml, service: tempo } }
+  prometheus: { extends: { file: docker-compose.infra.yaml, service: prometheus } }
+  grafana: { extends: { file: docker-compose.infra.yaml, service: grafana } }
+  cadvisor: { extends: { file: docker-compose.infra.yaml, service: cadvisor } }
+
+  hi-service:
+     build:
+       context: ../../
+       dockerfile: deployments/docker-compose/dockerfiles/Dockerfile
+       args:
+         SERVICE_PATH: services/hi-service
+     container_name: hi-service
+     environment:
+       - PORT=50051
+     networks:
+       - city-network
+     ports:
+       - "50051:50051"
+
+  api-gateway:
+    build:
+      context: ../../
+      dockerfile: deployments/docker-compose/dockerfiles/Dockerfile
+      args:
+        SERVICE_PATH: services/api-gateway/cmd
+    container_name: api-gateway
+    depends_on:
+      - hi-service
+    environment:
+      - GATEWAY_PORT=50052
+      - HI_SERVICE_URL=hi-service:50051
+    ports:
+      - "50052:50052"
+    networks:
+      - city-network
+    entrypoint: ["./wait-for-it.sh", "hi-service:50051", "./binary"]
+
+networks:
+  city-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  loki-data:
+  tempo-data:
+  prometheus-data:
+  grafana-data:

@@ -1,0 +1,149 @@
+version: '3.8'
+
+services:
+  # --- ИНФРАСТРУКТУРА ПРИЛОЖЕНИЯ ---
+  nats:
+    image: nats:2.9-alpine
+    container_name: city-nats
+    restart: always
+    ports:
+      - "${NATS_PORT}:4222"
+      - "${NATS_MONITOR_PORT}:8222"
+    command: ["-m", "8222", "-ms", "8222"]
+    networks:
+      - city-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-S", "http://localhost:8222/varz"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  redis:
+    image: redis:alpine
+    container_name: city-redis
+    restart: always
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - city-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: city-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      - city-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      retries: 5
+
+  # --- СТЕК МОНИТОРИНГА (LGTM) ---
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.96.0
+    container_name: city-otel-collector
+    restart: always
+    command: ["--config=/etc/otel-collector.yaml"]
+    volumes:
+      - ${PROJECT_ROOT}/deployments/configs/otel/config.yaml:/etc/otel-collector.yaml
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - city-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "4318"]
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: city-loki
+    restart: always
+    ports:
+      - "3100:3100"
+    command: "-config.file=/etc/loki/local-config.yaml"
+    volumes:
+      - ${PROJECT_ROOT}/deployments/configs/loki/local-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    networks:
+      - city-network
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: city-tempo
+    restart: always
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ${PROJECT_ROOT}/deployments/configs/tempo/tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    networks:
+      - city-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: city-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ${PROJECT_ROOT}/deployments/configs/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - city-network
+    depends_on:
+      - cadvisor
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: city-grafana
+    user: "0"
+    restart: always
+    volumes:
+      - ${PROJECT_ROOT}/deployments/configs/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/ds.yaml
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    ports:
+      - "3000:3000"
+    networks:
+      - city-network
+
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    privileged: true
+    networks:
+      - city-network
+
+volumes:
+  loki-data:
+  tempo-data:
+  prometheus-data:
+  grafana-data:
+  postgres_data:
+
+networks:
+  city-network:
+    driver: bridge
