@@ -41,3 +41,6 @@ temp/
 .nfs*
 
 # End of https://www.toptal.com/developers/gitignore/api/go,linux
+services/map-service/internal/data/*.pbf
+services/map-service/internal/data/*.bin
+tmp.txt
