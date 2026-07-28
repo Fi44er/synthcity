@@ -7,6 +7,7 @@
 package mapv1
 
 import (
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -22,6 +23,110 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type JunctionType int32
+
+const (
+	JunctionType_JUNCTION_TYPE_UNSPECIFIED   JunctionType = 0
+	JunctionType_JUNCTION_TYPE_REGULAR       JunctionType = 1
+	JunctionType_JUNCTION_TYPE_TRAFFIC_LIGHT JunctionType = 2
+	JunctionType_JUNCTION_TYPE_CROSSING      JunctionType = 3
+)
+
+// Enum value maps for JunctionType.
+var (
+	JunctionType_name = map[int32]string{
+		0: "JUNCTION_TYPE_UNSPECIFIED",
+		1: "JUNCTION_TYPE_REGULAR",
+		2: "JUNCTION_TYPE_TRAFFIC_LIGHT",
+		3: "JUNCTION_TYPE_CROSSING",
+	}
+	JunctionType_value = map[string]int32{
+		"JUNCTION_TYPE_UNSPECIFIED":   0,
+		"JUNCTION_TYPE_REGULAR":       1,
+		"JUNCTION_TYPE_TRAFFIC_LIGHT": 2,
+		"JUNCTION_TYPE_CROSSING":      3,
+	}
+)
+
+func (x JunctionType) Enum() *JunctionType {
+	p := new(JunctionType)
+	*p = x
+	return p
+}
+
+func (x JunctionType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (JunctionType) Descriptor() protoreflect.EnumDescriptor {
+	return file_map_v1_map_proto_enumTypes[0].Descriptor()
+}
+
+func (JunctionType) Type() protoreflect.EnumType {
+	return &file_map_v1_map_proto_enumTypes[0]
+}
+
+func (x JunctionType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use JunctionType.Descriptor instead.
+func (JunctionType) EnumDescriptor() ([]byte, []int) {
+	return file_map_v1_map_proto_rawDescGZIP(), []int{0}
+}
+
+type LatLng struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Lat           float64                `protobuf:"fixed64,1,opt,name=lat,proto3" json:"lat,omitempty"`
+	Lon           float64                `protobuf:"fixed64,2,opt,name=lon,proto3" json:"lon,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LatLng) Reset() {
+	*x = LatLng{}
+	mi := &file_map_v1_map_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LatLng) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LatLng) ProtoMessage() {}
+
+func (x *LatLng) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_map_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LatLng.ProtoReflect.Descriptor instead.
+func (*LatLng) Descriptor() ([]byte, []int) {
+	return file_map_v1_map_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *LatLng) GetLat() float64 {
+	if x != nil {
+		return x.Lat
+	}
+	return 0
+}
+
+func (x *LatLng) GetLon() float64 {
+	if x != nil {
+		return x.Lon
+	}
+	return 0
+}
+
 type GetRouteRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Start         *LatLng                `protobuf:"bytes,1,opt,name=start,proto3" json:"start,omitempty"`
@@ -32,7 +137,7 @@ type GetRouteRequest struct {
 
 func (x *GetRouteRequest) Reset() {
 	*x = GetRouteRequest{}
-	mi := &file_map_v1_map_proto_msgTypes[0]
+	mi := &file_map_v1_map_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +149,7 @@ func (x *GetRouteRequest) String() string {
 func (*GetRouteRequest) ProtoMessage() {}
 
 func (x *GetRouteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_map_proto_msgTypes[0]
+	mi := &file_map_v1_map_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +162,7 @@ func (x *GetRouteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRouteRequest.ProtoReflect.Descriptor instead.
 func (*GetRouteRequest) Descriptor() ([]byte, []int) {
-	return file_map_v1_map_proto_rawDescGZIP(), []int{0}
+	return file_map_v1_map_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *GetRouteRequest) GetStart() *LatLng {
@@ -74,79 +179,14 @@ func (x *GetRouteRequest) GetEnd() *LatLng {
 	return nil
 }
 
-type Route struct {
+type GetRouteResponse struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	Points          []*LatLng              `protobuf:"bytes,1,rep,name=points,proto3" json:"points,omitempty"`                                            // Геометрия пути для отрисовки
-	NodeIds         []int64                `protobuf:"varint,2,rep,packed,name=node_ids,json=nodeIds,proto3" json:"node_ids,omitempty"`                   // Цепочка узлов для логики движения машин
-	DistanceMeters  float64                `protobuf:"fixed64,3,opt,name=distance_meters,json=distanceMeters,proto3" json:"distance_meters,omitempty"`    // Общая длина пути
-	DurationSeconds float64                `protobuf:"fixed64,4,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"` // Расчетное время в пути
+	Points          []*LatLng              `protobuf:"bytes,1,rep,name=points,proto3" json:"points,omitempty"`
+	NodeIds         []int64                `protobuf:"varint,2,rep,packed,name=node_ids,json=nodeIds,proto3" json:"node_ids,omitempty"`
+	DistanceMeters  float64                `protobuf:"fixed64,3,opt,name=distance_meters,json=distanceMeters,proto3" json:"distance_meters,omitempty"`
+	DurationSeconds float64                `protobuf:"fixed64,4,opt,name=duration_seconds,json=durationSeconds,proto3" json:"duration_seconds,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
-}
-
-func (x *Route) Reset() {
-	*x = Route{}
-	mi := &file_map_v1_map_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Route) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Route) ProtoMessage() {}
-
-func (x *Route) ProtoReflect() protoreflect.Message {
-	mi := &file_map_v1_map_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Route.ProtoReflect.Descriptor instead.
-func (*Route) Descriptor() ([]byte, []int) {
-	return file_map_v1_map_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *Route) GetPoints() []*LatLng {
-	if x != nil {
-		return x.Points
-	}
-	return nil
-}
-
-func (x *Route) GetNodeIds() []int64 {
-	if x != nil {
-		return x.NodeIds
-	}
-	return nil
-}
-
-func (x *Route) GetDistanceMeters() float64 {
-	if x != nil {
-		return x.DistanceMeters
-	}
-	return 0
-}
-
-func (x *Route) GetDurationSeconds() float64 {
-	if x != nil {
-		return x.DurationSeconds
-	}
-	return 0
-}
-
-type GetRouteResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Points        []*LatLng              `protobuf:"bytes,1,rep,name=points,proto3" json:"points,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetRouteResponse) Reset() {
@@ -186,28 +226,48 @@ func (x *GetRouteResponse) GetPoints() []*LatLng {
 	return nil
 }
 
-type LatLng struct {
+func (x *GetRouteResponse) GetNodeIds() []int64 {
+	if x != nil {
+		return x.NodeIds
+	}
+	return nil
+}
+
+func (x *GetRouteResponse) GetDistanceMeters() float64 {
+	if x != nil {
+		return x.DistanceMeters
+	}
+	return 0
+}
+
+func (x *GetRouteResponse) GetDurationSeconds() float64 {
+	if x != nil {
+		return x.DurationSeconds
+	}
+	return 0
+}
+
+type GetNearestNodeRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Lat           float64                `protobuf:"fixed64,1,opt,name=lat,proto3" json:"lat,omitempty"`
-	Lon           float64                `protobuf:"fixed64,2,opt,name=lon,proto3" json:"lon,omitempty"`
+	Location      *LatLng                `protobuf:"bytes,1,opt,name=location,proto3" json:"location,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *LatLng) Reset() {
-	*x = LatLng{}
+func (x *GetNearestNodeRequest) Reset() {
+	*x = GetNearestNodeRequest{}
 	mi := &file_map_v1_map_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *LatLng) String() string {
+func (x *GetNearestNodeRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LatLng) ProtoMessage() {}
+func (*GetNearestNodeRequest) ProtoMessage() {}
 
-func (x *LatLng) ProtoReflect() protoreflect.Message {
+func (x *GetNearestNodeRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_map_v1_map_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -219,46 +279,324 @@ func (x *LatLng) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LatLng.ProtoReflect.Descriptor instead.
-func (*LatLng) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetNearestNodeRequest.ProtoReflect.Descriptor instead.
+func (*GetNearestNodeRequest) Descriptor() ([]byte, []int) {
 	return file_map_v1_map_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *LatLng) GetLat() float64 {
+func (x *GetNearestNodeRequest) GetLocation() *LatLng {
 	if x != nil {
-		return x.Lat
+		return x.Location
+	}
+	return nil
+}
+
+type GetNearestNodeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NodeId        int64                  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	NodeLocation  *LatLng                `protobuf:"bytes,2,opt,name=node_location,json=nodeLocation,proto3" json:"node_location,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNearestNodeResponse) Reset() {
+	*x = GetNearestNodeResponse{}
+	mi := &file_map_v1_map_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNearestNodeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNearestNodeResponse) ProtoMessage() {}
+
+func (x *GetNearestNodeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_map_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNearestNodeResponse.ProtoReflect.Descriptor instead.
+func (*GetNearestNodeResponse) Descriptor() ([]byte, []int) {
+	return file_map_v1_map_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetNearestNodeResponse) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
 	}
 	return 0
 }
 
-func (x *LatLng) GetLon() float64 {
+func (x *GetNearestNodeResponse) GetNodeLocation() *LatLng {
 	if x != nil {
-		return x.Lon
+		return x.NodeLocation
+	}
+	return nil
+}
+
+type GetJunctionInfoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NodeId        int64                  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetJunctionInfoRequest) Reset() {
+	*x = GetJunctionInfoRequest{}
+	mi := &file_map_v1_map_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetJunctionInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetJunctionInfoRequest) ProtoMessage() {}
+
+func (x *GetJunctionInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_map_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetJunctionInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetJunctionInfoRequest) Descriptor() ([]byte, []int) {
+	return file_map_v1_map_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetJunctionInfoRequest) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
 	}
 	return 0
+}
+
+type GetJunctionInfoResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	NodeId           int64                  `protobuf:"varint,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+	Type             JunctionType           `protobuf:"varint,2,opt,name=type,proto3,enum=map.v1.JunctionType" json:"type,omitempty"`
+	ConnectedNodeIds []int64                `protobuf:"varint,3,rep,packed,name=connected_node_ids,json=connectedNodeIds,proto3" json:"connected_node_ids,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *GetJunctionInfoResponse) Reset() {
+	*x = GetJunctionInfoResponse{}
+	mi := &file_map_v1_map_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetJunctionInfoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetJunctionInfoResponse) ProtoMessage() {}
+
+func (x *GetJunctionInfoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_map_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetJunctionInfoResponse.ProtoReflect.Descriptor instead.
+func (*GetJunctionInfoResponse) Descriptor() ([]byte, []int) {
+	return file_map_v1_map_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetJunctionInfoResponse) GetNodeId() int64 {
+	if x != nil {
+		return x.NodeId
+	}
+	return 0
+}
+
+func (x *GetJunctionInfoResponse) GetType() JunctionType {
+	if x != nil {
+		return x.Type
+	}
+	return JunctionType_JUNCTION_TYPE_UNSPECIFIED
+}
+
+func (x *GetJunctionInfoResponse) GetConnectedNodeIds() []int64 {
+	if x != nil {
+		return x.ConnectedNodeIds
+	}
+	return nil
+}
+
+type UpdateEdgeWeightRequest struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	FromNodeId       int64                  `protobuf:"varint,1,opt,name=from_node_id,json=fromNodeId,proto3" json:"from_node_id,omitempty"`
+	ToNodeId         int64                  `protobuf:"varint,2,opt,name=to_node_id,json=toNodeId,proto3" json:"to_node_id,omitempty"`
+	WeightMultiplier float64                `protobuf:"fixed64,3,opt,name=weight_multiplier,json=weightMultiplier,proto3" json:"weight_multiplier,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *UpdateEdgeWeightRequest) Reset() {
+	*x = UpdateEdgeWeightRequest{}
+	mi := &file_map_v1_map_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateEdgeWeightRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateEdgeWeightRequest) ProtoMessage() {}
+
+func (x *UpdateEdgeWeightRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_map_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateEdgeWeightRequest.ProtoReflect.Descriptor instead.
+func (*UpdateEdgeWeightRequest) Descriptor() ([]byte, []int) {
+	return file_map_v1_map_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UpdateEdgeWeightRequest) GetFromNodeId() int64 {
+	if x != nil {
+		return x.FromNodeId
+	}
+	return 0
+}
+
+func (x *UpdateEdgeWeightRequest) GetToNodeId() int64 {
+	if x != nil {
+		return x.ToNodeId
+	}
+	return 0
+}
+
+func (x *UpdateEdgeWeightRequest) GetWeightMultiplier() float64 {
+	if x != nil {
+		return x.WeightMultiplier
+	}
+	return 0
+}
+
+type UpdateEdgeWeightResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateEdgeWeightResponse) Reset() {
+	*x = UpdateEdgeWeightResponse{}
+	mi := &file_map_v1_map_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateEdgeWeightResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateEdgeWeightResponse) ProtoMessage() {}
+
+func (x *UpdateEdgeWeightResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_map_v1_map_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateEdgeWeightResponse.ProtoReflect.Descriptor instead.
+func (*UpdateEdgeWeightResponse) Descriptor() ([]byte, []int) {
+	return file_map_v1_map_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *UpdateEdgeWeightResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
 }
 
 var File_map_v1_map_proto protoreflect.FileDescriptor
 
 const file_map_v1_map_proto_rawDesc = "" +
 	"\n" +
-	"\x10map/v1/map.proto\x12\x06map.v1\x1a\x1cgoogle/api/annotations.proto\"Y\n" +
-	"\x0fGetRouteRequest\x12$\n" +
-	"\x05start\x18\x01 \x01(\v2\x0e.map.v1.LatLngR\x05start\x12 \n" +
-	"\x03end\x18\x02 \x01(\v2\x0e.map.v1.LatLngR\x03end\"\x9e\x01\n" +
-	"\x05Route\x12&\n" +
-	"\x06points\x18\x01 \x03(\v2\x0e.map.v1.LatLngR\x06points\x12\x19\n" +
-	"\bnode_ids\x18\x02 \x03(\x03R\anodeIds\x12'\n" +
+	"\x10map/v1/map.proto\x12\x06map.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1bbuf/validate/validate.proto\"^\n" +
+	"\x06LatLng\x12)\n" +
+	"\x03lat\x18\x01 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80V@)\x00\x00\x00\x00\x00\x80V\xc0R\x03lat\x12)\n" +
+	"\x03lon\x18\x02 \x01(\x01B\x17\xbaH\x14\x12\x12\x19\x00\x00\x00\x00\x00\x80f@)\x00\x00\x00\x00\x00\x80f\xc0R\x03lon\"i\n" +
+	"\x0fGetRouteRequest\x12,\n" +
+	"\x05start\x18\x01 \x01(\v2\x0e.map.v1.LatLngB\x06\xbaH\x03\xc8\x01\x01R\x05start\x12(\n" +
+	"\x03end\x18\x02 \x01(\v2\x0e.map.v1.LatLngB\x06\xbaH\x03\xc8\x01\x01R\x03end\"\xbd\x01\n" +
+	"\x10GetRouteResponse\x120\n" +
+	"\x06points\x18\x01 \x03(\v2\x0e.map.v1.LatLngB\b\xbaH\x05\x92\x01\x02\b\x01R\x06points\x12#\n" +
+	"\bnode_ids\x18\x02 \x03(\x03B\b\xbaH\x05\x92\x01\x02\b\x01R\anodeIds\x12'\n" +
 	"\x0fdistance_meters\x18\x03 \x01(\x01R\x0edistanceMeters\x12)\n" +
-	"\x10duration_seconds\x18\x04 \x01(\x01R\x0fdurationSeconds\":\n" +
-	"\x10GetRouteResponse\x12&\n" +
-	"\x06points\x18\x01 \x03(\v2\x0e.map.v1.LatLngR\x06points\",\n" +
-	"\x06LatLng\x12\x10\n" +
-	"\x03lat\x18\x01 \x01(\x01R\x03lat\x12\x10\n" +
-	"\x03lon\x18\x02 \x01(\x01R\x03lon2i\n" +
+	"\x10duration_seconds\x18\x04 \x01(\x01R\x0fdurationSeconds\"K\n" +
+	"\x15GetNearestNodeRequest\x122\n" +
+	"\blocation\x18\x01 \x01(\v2\x0e.map.v1.LatLngB\x06\xbaH\x03\xc8\x01\x01R\blocation\"f\n" +
+	"\x16GetNearestNodeResponse\x12\x17\n" +
+	"\anode_id\x18\x01 \x01(\x03R\x06nodeId\x123\n" +
+	"\rnode_location\x18\x02 \x01(\v2\x0e.map.v1.LatLngR\fnodeLocation\":\n" +
+	"\x16GetJunctionInfoRequest\x12 \n" +
+	"\anode_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x06nodeId\"\x8a\x01\n" +
+	"\x17GetJunctionInfoResponse\x12\x17\n" +
+	"\anode_id\x18\x01 \x01(\x03R\x06nodeId\x12(\n" +
+	"\x04type\x18\x02 \x01(\x0e2\x14.map.v1.JunctionTypeR\x04type\x12,\n" +
+	"\x12connected_node_ids\x18\x03 \x03(\x03R\x10connectedNodeIds\"\x86\x01\n" +
+	"\x17UpdateEdgeWeightRequest\x12 \n" +
+	"\ffrom_node_id\x18\x01 \x01(\x03R\n" +
+	"fromNodeId\x12\x1c\n" +
+	"\n" +
+	"to_node_id\x18\x02 \x01(\x03R\btoNodeId\x12+\n" +
+	"\x11weight_multiplier\x18\x03 \x01(\x01R\x10weightMultiplier\"4\n" +
+	"\x18UpdateEdgeWeightResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess*\x85\x01\n" +
+	"\fJunctionType\x12\x1d\n" +
+	"\x19JUNCTION_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
+	"\x15JUNCTION_TYPE_REGULAR\x10\x01\x12\x1f\n" +
+	"\x1bJUNCTION_TYPE_TRAFFIC_LIGHT\x10\x02\x12\x1a\n" +
+	"\x16JUNCTION_TYPE_CROSSING\x10\x032\xd3\x03\n" +
 	"\n" +
 	"MapService\x12[\n" +
-	"\bGetRoute\x12\x17.map.v1.GetRouteRequest\x1a\x18.map.v1.GetRouteResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/api/v1/map/routeB5Z3github.com/Fi44er/synthcity/api/gen/go/map/v1;mapv1b\x06proto3"
+	"\bGetRoute\x12\x17.map.v1.GetRouteRequest\x1a\x18.map.v1.GetRouteResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/api/v1/map/route\x12q\n" +
+	"\x0eGetNearestNode\x12\x1d.map.v1.GetNearestNodeRequest\x1a\x1e.map.v1.GetNearestNodeResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/map/node/nearest\x12z\n" +
+	"\x0fGetJunctionInfo\x12\x1e.map.v1.GetJunctionInfoRequest\x1a\x1f.map.v1.GetJunctionInfoResponse\"&\x82\xd3\xe4\x93\x02 \x12\x1e/api/v1/map/junction/{node_id}\x12y\n" +
+	"\x10UpdateEdgeWeight\x12\x1f.map.v1.UpdateEdgeWeightRequest\x1a .map.v1.UpdateEdgeWeightResponse\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\"\x17/api/v1/map/edge/weightB5Z3github.com/Fi44er/synthcity/api/gen/go/map/v1;mapv1b\x06proto3"
 
 var (
 	file_map_v1_map_proto_rawDescOnce sync.Once
@@ -272,25 +610,40 @@ func file_map_v1_map_proto_rawDescGZIP() []byte {
 	return file_map_v1_map_proto_rawDescData
 }
 
-var file_map_v1_map_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_map_v1_map_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_map_v1_map_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_map_v1_map_proto_goTypes = []any{
-	(*GetRouteRequest)(nil),  // 0: map.v1.GetRouteRequest
-	(*Route)(nil),            // 1: map.v1.Route
-	(*GetRouteResponse)(nil), // 2: map.v1.GetRouteResponse
-	(*LatLng)(nil),           // 3: map.v1.LatLng
+	(JunctionType)(0),                // 0: map.v1.JunctionType
+	(*LatLng)(nil),                   // 1: map.v1.LatLng
+	(*GetRouteRequest)(nil),          // 2: map.v1.GetRouteRequest
+	(*GetRouteResponse)(nil),         // 3: map.v1.GetRouteResponse
+	(*GetNearestNodeRequest)(nil),    // 4: map.v1.GetNearestNodeRequest
+	(*GetNearestNodeResponse)(nil),   // 5: map.v1.GetNearestNodeResponse
+	(*GetJunctionInfoRequest)(nil),   // 6: map.v1.GetJunctionInfoRequest
+	(*GetJunctionInfoResponse)(nil),  // 7: map.v1.GetJunctionInfoResponse
+	(*UpdateEdgeWeightRequest)(nil),  // 8: map.v1.UpdateEdgeWeightRequest
+	(*UpdateEdgeWeightResponse)(nil), // 9: map.v1.UpdateEdgeWeightResponse
 }
 var file_map_v1_map_proto_depIdxs = []int32{
-	3, // 0: map.v1.GetRouteRequest.start:type_name -> map.v1.LatLng
-	3, // 1: map.v1.GetRouteRequest.end:type_name -> map.v1.LatLng
-	3, // 2: map.v1.Route.points:type_name -> map.v1.LatLng
-	3, // 3: map.v1.GetRouteResponse.points:type_name -> map.v1.LatLng
-	0, // 4: map.v1.MapService.GetRoute:input_type -> map.v1.GetRouteRequest
-	2, // 5: map.v1.MapService.GetRoute:output_type -> map.v1.GetRouteResponse
-	5, // [5:6] is the sub-list for method output_type
-	4, // [4:5] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	1,  // 0: map.v1.GetRouteRequest.start:type_name -> map.v1.LatLng
+	1,  // 1: map.v1.GetRouteRequest.end:type_name -> map.v1.LatLng
+	1,  // 2: map.v1.GetRouteResponse.points:type_name -> map.v1.LatLng
+	1,  // 3: map.v1.GetNearestNodeRequest.location:type_name -> map.v1.LatLng
+	1,  // 4: map.v1.GetNearestNodeResponse.node_location:type_name -> map.v1.LatLng
+	0,  // 5: map.v1.GetJunctionInfoResponse.type:type_name -> map.v1.JunctionType
+	2,  // 6: map.v1.MapService.GetRoute:input_type -> map.v1.GetRouteRequest
+	4,  // 7: map.v1.MapService.GetNearestNode:input_type -> map.v1.GetNearestNodeRequest
+	6,  // 8: map.v1.MapService.GetJunctionInfo:input_type -> map.v1.GetJunctionInfoRequest
+	8,  // 9: map.v1.MapService.UpdateEdgeWeight:input_type -> map.v1.UpdateEdgeWeightRequest
+	3,  // 10: map.v1.MapService.GetRoute:output_type -> map.v1.GetRouteResponse
+	5,  // 11: map.v1.MapService.GetNearestNode:output_type -> map.v1.GetNearestNodeResponse
+	7,  // 12: map.v1.MapService.GetJunctionInfo:output_type -> map.v1.GetJunctionInfoResponse
+	9,  // 13: map.v1.MapService.UpdateEdgeWeight:output_type -> map.v1.UpdateEdgeWeightResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_map_v1_map_proto_init() }
@@ -303,13 +656,14 @@ func file_map_v1_map_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_map_v1_map_proto_rawDesc), len(file_map_v1_map_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   4,
+			NumEnums:      1,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_map_v1_map_proto_goTypes,
 		DependencyIndexes: file_map_v1_map_proto_depIdxs,
+		EnumInfos:         file_map_v1_map_proto_enumTypes,
 		MessageInfos:      file_map_v1_map_proto_msgTypes,
 	}.Build()
 	File_map_v1_map_proto = out.File

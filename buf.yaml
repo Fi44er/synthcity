@@ -1,6 +1,7 @@
 version: v2
 deps:
   - buf.build/googleapis/googleapis
+  - buf.build/bufbuild/protovalidate
 modules:
   - path: api/proto # Теперь Buf знает, что искать файлы нужно именно здесь
 lint:
