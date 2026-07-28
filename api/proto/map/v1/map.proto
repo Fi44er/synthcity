@@ -5,8 +5,7 @@ package map.v1;
 option go_package = "github.com/Fi44er/synthcity/api/gen/go/map/v1;mapv1";
 
 import "google/api/annotations.proto";
-
-
+import "buf/validate/validate.proto";
 
 service MapService {
     rpc GetRoute(GetRouteRequest) returns (GetRouteResponse) {
@@ -15,29 +14,76 @@ service MapService {
           body: "*"
         };
     }
-  // Поиск ближайшего узла графа к GPS координате
-  // rpc GetNearestNode(GetNearestNodeRequest) returns (GetNearestNodeResponse);
-  // // Информация о перекрестке (для светофоров и маневров)
-  // rpc GetJunctionInfo(GetJunctionInfoRequest) returns (GetJunctionInfoResponse);
-}
 
-message GetRouteRequest {
-  LatLng start = 1;
-  LatLng end = 2;
-}
+    rpc GetNearestNode(GetNearestNodeRequest) returns (GetNearestNodeResponse) {
+        option (google.api.http) = {
+          get: "/api/v1/map/node/nearest"
+        };
+    }
 
-message Route {
-  repeated LatLng points = 1;      // Геометрия пути для отрисовки
-  repeated int64 node_ids = 2;      // Цепочка узлов для логики движения машин
-  double distance_meters = 3;       // Общая длина пути
-  double duration_seconds = 4;      // Расчетное время в пути
-}
+    rpc GetJunctionInfo(GetJunctionInfoRequest) returns (GetJunctionInfoResponse) {
+        option (google.api.http) = {
+          get: "/api/v1/map/junction/{node_id}"
+        };
+    }
 
-message GetRouteResponse {
-  repeated LatLng points = 1;
+    rpc UpdateEdgeWeight(UpdateEdgeWeightRequest) returns (UpdateEdgeWeightResponse) {
+        option (google.api.http) = {
+          post: "/api/v1/map/edge/weight"
+          body: "*"
+        };
+    }
 }
 
 message LatLng {
-  double lat = 1;
-  double lon = 2;
+  double lat = 1 [(buf.validate.field).double = {gte: -90, lte: 90}];
+  double lon = 2 [(buf.validate.field).double = {gte: -180, lte: 180}];
+}
+
+enum JunctionType {
+  JUNCTION_TYPE_UNSPECIFIED = 0;
+  JUNCTION_TYPE_REGULAR = 1;
+  JUNCTION_TYPE_TRAFFIC_LIGHT = 2;
+  JUNCTION_TYPE_CROSSING = 3;
+}
+
+message GetRouteRequest {
+  LatLng start = 1 [(buf.validate.field).required = true];
+  LatLng end = 2 [(buf.validate.field).required = true];
+}
+
+message GetRouteResponse {
+  repeated LatLng points = 1 [(buf.validate.field).repeated.min_items = 1];
+  repeated int64 node_ids = 2 [(buf.validate.field).repeated.min_items = 1];
+  double distance_meters = 3;
+  double duration_seconds = 4;
+}
+
+message GetNearestNodeRequest {
+  LatLng location = 1 [(buf.validate.field).required = true];
+}
+
+message GetNearestNodeResponse {
+  int64 node_id = 1;
+  LatLng node_location = 2;
+}
+
+message GetJunctionInfoRequest {
+  int64 node_id = 1 [(buf.validate.field).int64.gt = 0];
+}
+
+message GetJunctionInfoResponse {
+  int64 node_id = 1;
+  JunctionType type = 2;
+  repeated int64 connected_node_ids = 3;
+}
+
+message UpdateEdgeWeightRequest {
+  int64 from_node_id = 1;
+  int64 to_node_id = 2;
+  double weight_multiplier = 3;
+}
+
+message UpdateEdgeWeightResponse {
+  bool success = 1;
 }
