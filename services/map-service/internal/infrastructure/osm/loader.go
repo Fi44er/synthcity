@@ -38,7 +38,6 @@ const (
 
 func (l *Loader) LoadGraph(ctx context.Context) (*domain.RoadGraph, error) {
 	pbfPath := l.osmPath
-
 	start := time.Now()
 
 	log := logger.FromContext(ctx).With(
@@ -61,10 +60,7 @@ func (l *Loader) LoadGraph(ctx context.Context) (*domain.RoadGraph, error) {
 		return nil, fmt.Errorf("start decoder: %w", err)
 	}
 
-	graph := &domain.RoadGraph{
-		Nodes: make(map[int64]*domain.Node),
-		Edges: make(map[int64][]*domain.Edge),
-	}
+	graph := domain.NewRoadGraph()
 	allNodeMeta := make(map[int64]*domain.Node)
 	var rawNodes, rawWays int64
 
@@ -131,8 +127,8 @@ func processWay(graph *domain.RoadGraph, way *osmpbf.Way, meta map[int64]*domain
 		if ok1 && ok2 {
 			dist := domain.Haversine(n1.Point, n2.Point)
 
-			graph.Nodes[fromID] = n1
-			graph.Nodes[toID] = n2
+			graph.AddNode(n1)
+			graph.AddNode(n2)
 
 			edge := &domain.Edge{
 				ToID:     toID,
@@ -142,12 +138,12 @@ func processWay(graph *domain.RoadGraph, way *osmpbf.Way, meta map[int64]*domain
 				Lanes:    lanes,
 				Highway:  highway,
 			}
-			graph.Edges[fromID] = append(graph.Edges[fromID], edge)
+			graph.AddEdge(fromID, edge)
 
 			if !isOneWay {
 				backEdge := *edge
 				backEdge.ToID = fromID
-				graph.Edges[toID] = append(graph.Edges[toID], &backEdge)
+				graph.AddEdge(toID, &backEdge)
 			}
 		}
 	}

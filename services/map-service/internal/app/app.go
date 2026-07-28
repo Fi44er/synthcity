@@ -15,6 +15,7 @@ import (
 	"github.com/Fi44er/synthcity/pkg/logger"
 	"github.com/Fi44er/synthcity/pkg/telemetry"
 	"github.com/Fi44er/synthcity/services/map-service/internal/config"
+	"github.com/Fi44er/synthcity/services/map-service/internal/domain"
 	"github.com/Fi44er/synthcity/services/map-service/internal/infrastructure/osm"
 	"github.com/Fi44er/synthcity/services/map-service/internal/service"
 	transport "github.com/Fi44er/synthcity/services/map-service/internal/transport/grpc"
@@ -29,18 +30,33 @@ type App struct {
 func New(cfg *config.Config) *App {
 	l := logger.New("map-service", "info")
 
-	// 1. Загружаем карту (Infrastructure)
-	loader := osm.NewLoader(cfg.PbfPath)
-	graph, err := loader.LoadGraph(context.Background())
-	if err != nil {
-		l.Fatal("failed to load map graph", zap.Error(err))
-	}
-	l.Info("Map graph loaded", zap.Int("nodes", len(graph.Nodes)))
+	var graph *domain.RoadGraph
+	var err error
+	binPath := cfg.PbfPath + ".bin"
 
-	// 2. Инициализируем сервис (Business Logic)
+	l.Info("Attempting to load binary graph cache", zap.String("path", binPath))
+	graph, err = domain.LoadBinary(binPath)
+
+	if err != nil {
+		l.Warn("Binary cache not found or invalid, parsing PBF (this may take a while)", zap.Error(err))
+
+		loader := osm.NewLoader(cfg.PbfPath)
+		graph, err = loader.LoadGraph(context.Background())
+		if err != nil {
+			l.Fatal("Failed to load map from PBF", zap.Error(err))
+		}
+
+		if err := graph.SaveBinary(binPath); err != nil {
+			l.Error("Failed to save binary cache", zap.Error(err))
+		} else {
+			l.Info("Binary cache saved for future fast boots")
+		}
+	} else {
+		l.Info("Graph loaded from binary cache")
+	}
+
 	mapSvc := service.NewRouter(graph)
 
-	// 3. Настраиваем gRPC (Transport)
 	handler := transport.NewHandler(mapSvc)
 
 	s := grpc.NewServer(
