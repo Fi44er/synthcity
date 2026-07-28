@@ -22,7 +22,7 @@ func NewRouter(g *domain.RoadGraph) *Router {
 	return &Router{graph: g}
 }
 
-func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord) ([]domain.Coord, error) {
+func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord) (*domain.Route, error) {
 	start := time.Now()
 
 	log := logger.FromContext(ctx).With(
@@ -33,7 +33,6 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 		zap.Float64("to_lon", endCoord.Lon),
 	)
 
-	// 1. Находим ID ближайших узлов
 	startID, err := r.graph.GetNearestNode(startCoord)
 	if err != nil {
 		log.Error("start node not found", zap.Error(err))
@@ -47,9 +46,12 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 
 	log.Debug("nodes identified", zap.Int64("start_id", startID), zap.Int64("goal_id", goalID))
 
-	// 2. Алгоритм A*
 	cameFrom := make(map[int64]int64)
-	gScore := make(map[int64]float64) // Стоимость пути от старта до текущего узла
+	gScore := make(map[int64]float64)
+
+	distToNode := make(map[int64]float64)
+	// Аналогично для времени (с учетом штрафов)
+	timeToNode := make(map[int64]float64)
 
 	for id := range r.graph.Nodes {
 		gScore[id] = math.MaxFloat64
@@ -67,37 +69,35 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 		current := heap.Pop(pq).(*utils.Item).NodeID
 
 		if current == goalID {
-			path := r.reconstructPath(cameFrom, current)
 			log.Info("path found",
-				zap.Int("coords_count", len(path)),
 				zap.Int("visited_nodes", visitedNodes),
 				zap.Duration("duration", time.Since(start)),
 			)
 
 			telemetry.RecordMetrics(ctx, start, "map-service", "FindPath", "200")
-
-			return path, nil
+			return r.reconstructRoute(cameFrom, distToNode, timeToNode, current), nil
 		}
 
 		for _, edge := range r.graph.Edges[current] {
 			penalty := 0.0
 
-			// Если на целевом узле есть инфраструктура, добавляем "среднее время ожидания"
 			switch r.graph.Nodes[edge.ToID].Type {
 			case domain.NodeTrafficLight:
-				penalty = 15.0 // В среднем мы стоим на светофоре 15 секунд
+				penalty = 15.0
 			case domain.NodeCrossing:
-				penalty = 3.0 // Притормозить перед переходом
+				penalty = 3.0
 			}
-			tentativeGScore := gScore[current] + edge.Weight + penalty // Вес — это время в секундах
+			weightWithPenalty := edge.Weight + penalty
+			tentativeGScore := gScore[current] + weightWithPenalty
 
 			if tentativeGScore < gScore[edge.ToID] {
 				cameFrom[edge.ToID] = current
 				gScore[edge.ToID] = tentativeGScore
+				distToNode[edge.ToID] = edge.Distance
+				timeToNode[edge.ToID] = weightWithPenalty
 
-				// Эвристика: оставшееся время до цели по прямой
 				distToGoal := domain.Haversine(r.graph.Nodes[edge.ToID].Point, r.graph.Nodes[goalID].Point)
-				hScore := distToGoal / 30.0 // Предполагаем 30 м/с (108 км/ч) как оптимистичный лимит
+				hScore := distToGoal / 30.0 // эвристика: оставшееся время до цели по прямой
 
 				heap.Push(pq, &utils.Item{
 					NodeID:   edge.ToID,
@@ -112,15 +112,53 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 	return nil, fmt.Errorf("path not found")
 }
 
-func (r *Router) reconstructPath(cameFrom map[int64]int64, current int64) []domain.Coord {
+func (r *Router) GetNearestNode(ctx context.Context, coord domain.Coord) (*domain.CoordRes, error) {
+	log := logger.FromContext(ctx).With(
+		zap.String("method", "GetNearestNode"),
+		zap.Float64("lat", coord.Lat),
+		zap.Float64("lon", coord.Lon),
+	)
+	nodeID, err := r.graph.GetNearestNode(coord)
+	if err != nil {
+		log.Error("start node not found", zap.Error(err))
+		return nil, err
+	}
+
+	return &domain.CoordRes{
+		Coord:  coord,
+		NodeID: nodeID,
+	}, nil
+}
+
+func (r *Router) reconstructRoute(cameFrom map[int64]int64, dists map[int64]float64, times map[int64]float64, current int64) *domain.Route {
 	var path []domain.Coord
+	var nodeIDs []int64
+	var totalDist float64
+	var totalTime float64
+
 	for {
-		path = append([]domain.Coord{r.graph.Nodes[current].Point}, path...)
+		path = append(path, r.graph.Nodes[current].Point)
+		nodeIDs = append(nodeIDs, current)
+
+		totalDist += dists[current]
+		totalTime += times[current]
+
 		prev, ok := cameFrom[current]
 		if !ok {
 			break
 		}
 		current = prev
 	}
-	return path
+
+	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
+		path[i], path[j] = path[j], path[i]
+		nodeIDs[i], nodeIDs[j] = nodeIDs[j], nodeIDs[i]
+	}
+
+	return &domain.Route{
+		Points:   path,
+		NodeIDs:  nodeIDs,
+		Distance: totalDist,
+		Duration: totalTime,
+	}
 }
