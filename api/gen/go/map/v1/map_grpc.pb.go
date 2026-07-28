@@ -19,7 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MapService_GetRoute_FullMethodName = "/map.v1.MapService/GetRoute"
+	MapService_GetRoute_FullMethodName         = "/map.v1.MapService/GetRoute"
+	MapService_GetNearestNode_FullMethodName   = "/map.v1.MapService/GetNearestNode"
+	MapService_GetJunctionInfo_FullMethodName  = "/map.v1.MapService/GetJunctionInfo"
+	MapService_UpdateEdgeWeight_FullMethodName = "/map.v1.MapService/UpdateEdgeWeight"
 )
 
 // MapServiceClient is the client API for MapService service.
@@ -27,6 +30,9 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MapServiceClient interface {
 	GetRoute(ctx context.Context, in *GetRouteRequest, opts ...grpc.CallOption) (*GetRouteResponse, error)
+	GetNearestNode(ctx context.Context, in *GetNearestNodeRequest, opts ...grpc.CallOption) (*GetNearestNodeResponse, error)
+	GetJunctionInfo(ctx context.Context, in *GetJunctionInfoRequest, opts ...grpc.CallOption) (*GetJunctionInfoResponse, error)
+	UpdateEdgeWeight(ctx context.Context, in *UpdateEdgeWeightRequest, opts ...grpc.CallOption) (*UpdateEdgeWeightResponse, error)
 }
 
 type mapServiceClient struct {
@@ -47,11 +53,44 @@ func (c *mapServiceClient) GetRoute(ctx context.Context, in *GetRouteRequest, op
 	return out, nil
 }
 
+func (c *mapServiceClient) GetNearestNode(ctx context.Context, in *GetNearestNodeRequest, opts ...grpc.CallOption) (*GetNearestNodeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetNearestNodeResponse)
+	err := c.cc.Invoke(ctx, MapService_GetNearestNode_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mapServiceClient) GetJunctionInfo(ctx context.Context, in *GetJunctionInfoRequest, opts ...grpc.CallOption) (*GetJunctionInfoResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetJunctionInfoResponse)
+	err := c.cc.Invoke(ctx, MapService_GetJunctionInfo_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mapServiceClient) UpdateEdgeWeight(ctx context.Context, in *UpdateEdgeWeightRequest, opts ...grpc.CallOption) (*UpdateEdgeWeightResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateEdgeWeightResponse)
+	err := c.cc.Invoke(ctx, MapService_UpdateEdgeWeight_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MapServiceServer is the server API for MapService service.
 // All implementations must embed UnimplementedMapServiceServer
 // for forward compatibility.
 type MapServiceServer interface {
 	GetRoute(context.Context, *GetRouteRequest) (*GetRouteResponse, error)
+	GetNearestNode(context.Context, *GetNearestNodeRequest) (*GetNearestNodeResponse, error)
+	GetJunctionInfo(context.Context, *GetJunctionInfoRequest) (*GetJunctionInfoResponse, error)
+	UpdateEdgeWeight(context.Context, *UpdateEdgeWeightRequest) (*UpdateEdgeWeightResponse, error)
 	mustEmbedUnimplementedMapServiceServer()
 }
 
@@ -64,6 +103,15 @@ type UnimplementedMapServiceServer struct{}
 
 func (UnimplementedMapServiceServer) GetRoute(context.Context, *GetRouteRequest) (*GetRouteResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRoute not implemented")
+}
+func (UnimplementedMapServiceServer) GetNearestNode(context.Context, *GetNearestNodeRequest) (*GetNearestNodeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetNearestNode not implemented")
+}
+func (UnimplementedMapServiceServer) GetJunctionInfo(context.Context, *GetJunctionInfoRequest) (*GetJunctionInfoResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetJunctionInfo not implemented")
+}
+func (UnimplementedMapServiceServer) UpdateEdgeWeight(context.Context, *UpdateEdgeWeightRequest) (*UpdateEdgeWeightResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateEdgeWeight not implemented")
 }
 func (UnimplementedMapServiceServer) mustEmbedUnimplementedMapServiceServer() {}
 func (UnimplementedMapServiceServer) testEmbeddedByValue()                    {}
@@ -104,6 +152,60 @@ func _MapService_GetRoute_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MapService_GetNearestNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNearestNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServiceServer).GetNearestNode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MapService_GetNearestNode_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServiceServer).GetNearestNode(ctx, req.(*GetNearestNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MapService_GetJunctionInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetJunctionInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServiceServer).GetJunctionInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MapService_GetJunctionInfo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServiceServer).GetJunctionInfo(ctx, req.(*GetJunctionInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MapService_UpdateEdgeWeight_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateEdgeWeightRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MapServiceServer).UpdateEdgeWeight(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MapService_UpdateEdgeWeight_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MapServiceServer).UpdateEdgeWeight(ctx, req.(*UpdateEdgeWeightRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MapService_ServiceDesc is the grpc.ServiceDesc for MapService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +216,18 @@ var MapService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRoute",
 			Handler:    _MapService_GetRoute_Handler,
+		},
+		{
+			MethodName: "GetNearestNode",
+			Handler:    _MapService_GetNearestNode_Handler,
+		},
+		{
+			MethodName: "GetJunctionInfo",
+			Handler:    _MapService_GetJunctionInfo_Handler,
+		},
+		{
+			MethodName: "UpdateEdgeWeight",
+			Handler:    _MapService_UpdateEdgeWeight_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

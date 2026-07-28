@@ -16,6 +16,107 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/map/edge/weight": {
+      "post": {
+        "operationId": "MapService_UpdateEdgeWeight",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateEdgeWeightResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1UpdateEdgeWeightRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MapService"
+        ]
+      }
+    },
+    "/api/v1/map/junction/{nodeId}": {
+      "get": {
+        "operationId": "MapService_GetJunctionInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetJunctionInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "nodeId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "MapService"
+        ]
+      }
+    },
+    "/api/v1/map/node/nearest": {
+      "get": {
+        "operationId": "MapService_GetNearestNode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetNearestNodeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "location.lat",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "name": "location.lon",
+            "in": "query",
+            "required": false,
+            "type": "number",
+            "format": "double"
+          }
+        ],
+        "tags": [
+          "MapService"
+        ]
+      }
+    },
     "/api/v1/map/route": {
       "post": {
         "operationId": "MapService_GetRoute",
@@ -78,6 +179,37 @@
         }
       }
     },
+    "v1GetJunctionInfoResponse": {
+      "type": "object",
+      "properties": {
+        "nodeId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "type": {
+          "$ref": "#/definitions/v1JunctionType"
+        },
+        "connectedNodeIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        }
+      }
+    },
+    "v1GetNearestNodeResponse": {
+      "type": "object",
+      "properties": {
+        "nodeId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "nodeLocation": {
+          "$ref": "#/definitions/v1LatLng"
+        }
+      }
+    },
     "v1GetRouteRequest": {
       "type": "object",
       "properties": {
@@ -98,8 +230,33 @@
             "type": "object",
             "$ref": "#/definitions/v1LatLng"
           }
+        },
+        "nodeIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "int64"
+          }
+        },
+        "distanceMeters": {
+          "type": "number",
+          "format": "double"
+        },
+        "durationSeconds": {
+          "type": "number",
+          "format": "double"
         }
       }
+    },
+    "v1JunctionType": {
+      "type": "string",
+      "enum": [
+        "JUNCTION_TYPE_UNSPECIFIED",
+        "JUNCTION_TYPE_REGULAR",
+        "JUNCTION_TYPE_TRAFFIC_LIGHT",
+        "JUNCTION_TYPE_CROSSING"
+      ],
+      "default": "JUNCTION_TYPE_UNSPECIFIED"
     },
     "v1LatLng": {
       "type": "object",
@@ -111,6 +268,31 @@
         "lon": {
           "type": "number",
           "format": "double"
+        }
+      }
+    },
+    "v1UpdateEdgeWeightRequest": {
+      "type": "object",
+      "properties": {
+        "fromNodeId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "toNodeId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "weightMultiplier": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "v1UpdateEdgeWeightResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
         }
       }
     }
