@@ -14,15 +14,15 @@ import (
 	"go.uber.org/zap"
 )
 
-type Router struct {
+type MapService struct {
 	graph *domain.RoadGraph
 }
 
-func NewRouter(g *domain.RoadGraph) *Router {
-	return &Router{graph: g}
+func NewMapService(g *domain.RoadGraph) *MapService {
+	return &MapService{graph: g}
 }
 
-func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord) (*domain.Route, error) {
+func (s *MapService) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord) (*domain.Route, error) {
 	start := time.Now()
 
 	log := logger.FromContext(ctx).With(
@@ -33,12 +33,12 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 		zap.Float64("to_lon", endCoord.Lon),
 	)
 
-	startID, err := r.graph.GetNearestNode(startCoord)
+	startID, err := s.graph.GetNearestNode(startCoord)
 	if err != nil {
 		log.Error("start node not found", zap.Error(err))
 		return nil, err
 	}
-	goalID, err := r.graph.GetNearestNode(endCoord)
+	goalID, err := s.graph.GetNearestNode(endCoord)
 	if err != nil {
 		log.Error("goal node not found", zap.Error(err))
 		return nil, err
@@ -50,10 +50,9 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 	gScore := make(map[int64]float64)
 
 	distToNode := make(map[int64]float64)
-	// Аналогично для времени (с учетом штрафов)
 	timeToNode := make(map[int64]float64)
 
-	for id := range r.graph.Nodes {
+	for id := range s.graph.Nodes {
 		gScore[id] = math.MaxFloat64
 	}
 	gScore[startID] = 0
@@ -75,13 +74,13 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 			)
 
 			telemetry.RecordMetrics(ctx, start, "map-service", "FindPath", "200")
-			return r.reconstructRoute(cameFrom, distToNode, timeToNode, current), nil
+			return s.reconstructRoute(cameFrom, distToNode, timeToNode, current), nil
 		}
 
-		for _, edge := range r.graph.Edges[current] {
+		for _, edge := range s.graph.Edges[current] {
 			penalty := 0.0
 
-			switch r.graph.Nodes[edge.ToID].Type {
+			switch s.graph.Nodes[edge.ToID].Type {
 			case domain.NodeTrafficLight:
 				penalty = 15.0
 			case domain.NodeCrossing:
@@ -96,7 +95,7 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 				distToNode[edge.ToID] = edge.Distance
 				timeToNode[edge.ToID] = weightWithPenalty
 
-				distToGoal := domain.Haversine(r.graph.Nodes[edge.ToID].Point, r.graph.Nodes[goalID].Point)
+				distToGoal := domain.Haversine(s.graph.Nodes[edge.ToID].Point, s.graph.Nodes[goalID].Point)
 				hScore := distToGoal / 30.0 // эвристика: оставшееся время до цели по прямой
 
 				heap.Push(pq, &utils.Item{
@@ -112,13 +111,13 @@ func (r *Router) GetRoute(ctx context.Context, startCoord, endCoord domain.Coord
 	return nil, fmt.Errorf("path not found")
 }
 
-func (r *Router) GetNearestNode(ctx context.Context, coord domain.Coord) (*domain.CoordRes, error) {
+func (s *MapService) GetNearestNode(ctx context.Context, coord domain.Coord) (*domain.CoordRes, error) {
 	log := logger.FromContext(ctx).With(
 		zap.String("method", "GetNearestNode"),
 		zap.Float64("lat", coord.Lat),
 		zap.Float64("lon", coord.Lon),
 	)
-	nodeID, err := r.graph.GetNearestNode(coord)
+	nodeID, err := s.graph.GetNearestNode(coord)
 	if err != nil {
 		log.Error("start node not found", zap.Error(err))
 		return nil, err
@@ -130,14 +129,37 @@ func (r *Router) GetNearestNode(ctx context.Context, coord domain.Coord) (*domai
 	}, nil
 }
 
-func (r *Router) reconstructRoute(cameFrom map[int64]int64, dists map[int64]float64, times map[int64]float64, current int64) *domain.Route {
+func (s *MapService) GetJunction(ctx context.Context, id int64) (domain.JunctionInfo, error) {
+	nodeID, neighbors, nodeType, err := s.graph.GetJunctionInfo(id)
+	if err != nil {
+		return domain.JunctionInfo{}, err
+	}
+
+	return domain.JunctionInfo{
+		ID:               *nodeID,
+		Type:             nodeType,
+		ConnectedNodeIDs: neighbors,
+	}, nil
+}
+
+func (s *MapService) UpdateEdgeWeight(ctx context.Context, from, to int64, mult float64) error {
+	log := logger.FromContext(ctx)
+	log.Info("updating edge weight",
+		zap.Int64("from", from),
+		zap.Int64("to", to),
+		zap.Float64("mult", mult))
+
+	return s.graph.UpdateEdgeWeight(from, to, mult)
+}
+
+func (s *MapService) reconstructRoute(cameFrom map[int64]int64, dists map[int64]float64, times map[int64]float64, current int64) *domain.Route {
 	var path []domain.Coord
 	var nodeIDs []int64
 	var totalDist float64
 	var totalTime float64
 
 	for {
-		path = append(path, r.graph.Nodes[current].Point)
+		path = append(path, s.graph.Nodes[current].Point)
 		nodeIDs = append(nodeIDs, current)
 
 		totalDist += dists[current]

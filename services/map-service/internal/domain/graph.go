@@ -1,57 +1,11 @@
 package domain
 
 import (
-	"bufio"
 	"fmt"
-	"math"
-	"os"
 	"sync"
 
 	"github.com/dhconnelly/rtreego"
-	"github.com/vmihailenco/msgpack/v5"
 )
-
-// --- Базовые типы ---
-
-type Coord struct {
-	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
-}
-
-type CoordRes struct {
-	Coord  Coord `json:"coord"`
-	NodeID int64 `json:"node_id"`
-}
-
-type NodeType int8
-
-const (
-	NodeRegular NodeType = iota
-	NodeTrafficLight
-	NodeCrossing
-)
-
-type Node struct {
-	ID    int64
-	Point Coord
-	Type  NodeType
-}
-
-type Edge struct {
-	ToID     int64
-	Distance float64
-	MaxSpeed float64
-	Weight   float64
-	Lanes    int
-	Highway  string
-}
-
-type Route struct {
-	Points   []Coord
-	NodeIDs  []int64
-	Distance float64
-	Duration float64
-}
 
 type RoadGraph struct {
 	Nodes map[int64]*Node   `msgpack:"nodes"`
@@ -71,17 +25,13 @@ func NewRoadGraph() *RoadGraph {
 	}
 }
 
-type spatialNode struct {
-	id    int64
-	point rtreego.Point
-}
-
-func (s *spatialNode) Bounds() rtreego.Rect { return s.point.ToRect(0.0001) }
-
 func (g *RoadGraph) AddNode(n *Node) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
+	if _, exists := g.Nodes[n.ID]; exists {
+		return
+	}
 	g.Nodes[n.ID] = n
 	g.tree.Insert(&spatialNode{
 		id:    n.ID,
@@ -95,81 +45,44 @@ func (g *RoadGraph) AddEdge(fromID int64, edge *Edge) {
 	g.Edges[fromID] = append(g.Edges[fromID], edge)
 }
 
-func (g *RoadGraph) GetNearestNode(p Coord) (int64, error) {
+func (g *RoadGraph) GetJunctionInfo(id int64) (*int64, []int64, NodeType, error) {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
 
-	q := rtreego.Point{p.Lon, p.Lat}
-	nearest := g.tree.NearestNeighbor(q)
-	if nearest == nil {
-		return 0, fmt.Errorf("no nodes found")
+	node, exists := g.Nodes[id]
+	if !exists {
+		return nil, nil, 0, fmt.Errorf("node %d not found", id)
 	}
 
-	sn := nearest.(*spatialNode)
-
-	dist := Haversine(p, g.Nodes[sn.id].Point)
-	if dist > 1000 {
-		return 0, fmt.Errorf("nearest node too far: %.0fm", dist)
+	var neighbors []int64
+	for _, edge := range g.Edges[id] {
+		neighbors = append(neighbors, edge.ToID)
 	}
 
-	return sn.id, nil
+	return &node.ID, neighbors, node.Type, nil
 }
 
-func (g *RoadGraph) SaveBinary(path string) error {
-	file, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+func (g *RoadGraph) UpdateEdgeWeight(fromID, toID int64, multiplier float64) error {
+	g.mu.Lock()
+	defer g.mu.Unlock()
 
-	writer := bufio.NewWriter(file)
-	enc := msgpack.NewEncoder(writer)
-
-	err = enc.Encode(g)
-	if err != nil {
-		return err
-	}
-	return writer.Flush()
-}
-
-func LoadBinary(path string) (*RoadGraph, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	g := NewRoadGraph()
-
-	reader := bufio.NewReader(file)
-
-	dec := msgpack.NewDecoder(reader)
-	if err := dec.Decode(g); err != nil {
-		return nil, err
+	edges, exists := g.Edges[fromID]
+	if !exists {
+		return fmt.Errorf("from_node %d not found", fromID)
 	}
 
-	spatialItems := make([]rtreego.Spatial, 0, len(g.Nodes))
-	for _, n := range g.Nodes {
-		spatialItems = append(spatialItems, &spatialNode{
-			id:    n.ID,
-			point: rtreego.Point{n.Point.Lon, n.Point.Lat},
-		})
+	found := false
+	for _, edge := range edges {
+		if edge.ToID == toID {
+			edge.Weight = (edge.Distance / edge.MaxSpeed) * multiplier
+			found = true
+			break
+		}
 	}
 
-	g.tree = rtreego.NewTree(2, 25, 50, spatialItems...)
+	if !found {
+		return fmt.Errorf("edge %d -> %d not found", fromID, toID)
+	}
 
-	return g, nil
-}
-
-func Haversine(c1, c2 Coord) float64 {
-	const R = 6371000
-	phi1 := c1.Lat * math.Pi / 180
-	phi2 := c2.Lat * math.Pi / 180
-	dPhi := (c2.Lat - c1.Lat) * math.Pi / 180
-	dLambda := (c2.Lon - c1.Lon) * math.Pi / 180
-
-	a := math.Sin(dPhi/2)*math.Sin(dPhi/2) +
-		math.Cos(phi1)*math.Cos(phi2)*
-			math.Sin(dLambda/2)*math.Sin(dLambda/2)
-	return R * 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+	return nil
 }

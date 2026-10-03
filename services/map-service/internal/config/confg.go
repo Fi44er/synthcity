@@ -8,7 +8,7 @@ import (
 )
 
 type Config struct {
-	GRPCPort         string `env:"MAP_GRPC_PORT" envDefault:"50051"`
+	GRPCPort         string `env:"GRPC_PORT" envDefault:"50051"`
 	AppEnv           string `env:"APP_ENV" envDefault:"production"`
 	OtelCollectorURL string `env:"OTEL_COLLECTOR_URL" envDefault:"localhost:4318"`
 	PbfPath          string `env:"MAP_PBF_PATH" envDefault:"./internal/data/test.pbf"`
