@@ -44,3 +44,9 @@ temp/
 services/map-service/internal/data/*.pbf
 services/map-service/internal/data/*.bin
 tmp.txt
+
+.env
+!.env.example
+
+.env
+!.env.example

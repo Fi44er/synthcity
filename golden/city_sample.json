@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "origin_gps": { "lat": 57.708871, "lon": 11.97456 },
+    "units": "meters",
+    "cell_size": 100
+  },
+  "features": [
+    {
+      "id": "bld_1042",
+      "type": "building",
+      "position": { "x": 5, "y": 0, "z": 10 },
+      "rotation": 0,
+      "geometry": {
+        "type": "Polygon",
+        "points": [
+          [0, 0], [10, 0], [10, 15], [0, 15]
+        ],
+        "height": 12.5,
+        "floor_height": 3.0,
+        "floors": 4
+      },
+      "metadata": {
+        "name": "Жилой дом",
+        "address": "ул. Гётеборга, 5",
+        "gps": { "lat": 57.7089, "lon": 11.9746 }
+      }
+    },
+    {
+      "id": "light_55",
+      "type": "traffic_light",
+      "position": { "x": 12.5, "y": 0, "z": 8.2 },
+      "rotation": 90,
+      "metadata": { "state": "active" }
+    },
+    {
+      "id": "road_01",
+      "type": "road",
+      "geometry": {
+        "type": "LineString",
+        "points": [
+          [0, 10], [50, 10], [100, 15]
+        ],
+        "width": 8
+      }
+    }
+  ]
+}

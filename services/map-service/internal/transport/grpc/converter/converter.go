@@ -15,7 +15,7 @@ func (c *Converter) ToProtoCoord(coord domain.Coord) *pb.LatLng {
 	return &pb.LatLng{Lat: coord.Lat, Lon: coord.Lon}
 }
 
-func (c *Converter) ToProtoResponse(route *domain.Route) *pb.GetRouteResponse {
+func (c *Converter) ToRouteProtoResponse(route *domain.Route) *pb.GetRouteResponse {
 	points := make([]*pb.LatLng, len(route.Points))
 	for i, p := range route.Points {
 		points[i] = c.ToProtoCoord(p)
@@ -26,5 +26,20 @@ func (c *Converter) ToProtoResponse(route *domain.Route) *pb.GetRouteResponse {
 		NodeIds:         route.NodeIDs,
 		DistanceMeters:  route.Distance,
 		DurationSeconds: route.Duration,
+	}
+}
+
+func (c *Converter) ToJunctionProtoResponse(junction *domain.JunctionInfo) *pb.GetJunctionInfoResponse {
+	return &pb.GetJunctionInfoResponse{
+		NodeId:           junction.ID,
+		Type:             pb.JunctionType(junction.Type),
+		ConnectedNodeIds: junction.ConnectedNodeIDs,
+	}
+}
+
+func (c *Converter) ToNearestNodeProtoResponse(nearestNode *domain.CoordRes) *pb.GetNearestNodeResponse {
+	return &pb.GetNearestNodeResponse{
+		NodeId:       nearestNode.NodeID,
+		NodeLocation: c.ToProtoCoord(nearestNode.Coord),
 	}
 }

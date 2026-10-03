@@ -17,7 +17,7 @@ import (
 	"github.com/Fi44er/synthcity/services/map-service/internal/config"
 	"github.com/Fi44er/synthcity/services/map-service/internal/domain"
 	"github.com/Fi44er/synthcity/services/map-service/internal/infrastructure/osm"
-	"github.com/Fi44er/synthcity/services/map-service/internal/service"
+	service "github.com/Fi44er/synthcity/services/map-service/internal/service/route"
 	transport "github.com/Fi44er/synthcity/services/map-service/internal/transport/grpc"
 )
 
@@ -40,7 +40,10 @@ func New(cfg *config.Config) *App {
 	if err != nil {
 		l.Warn("Binary cache not found or invalid, parsing PBF (this may take a while)", zap.Error(err))
 
-		loader := osm.NewLoader(cfg.PbfPath)
+		graph = domain.NewRoadGraph()
+		graphProc := osm.NewGraphProcessor(graph)
+		staticProc := osm.NewStaticProcessor()
+		loader := osm.NewLoader(cfg.PbfPath, graphProc, staticProc)
 		graph, err = loader.LoadGraph(context.Background())
 		if err != nil {
 			l.Fatal("Failed to load map from PBF", zap.Error(err))
@@ -55,7 +58,7 @@ func New(cfg *config.Config) *App {
 		l.Info("Graph loaded from binary cache")
 	}
 
-	mapSvc := service.NewRouter(graph)
+	mapSvc := service.NewMapService(graph)
 
 	handler := transport.NewHandler(mapSvc)
 
