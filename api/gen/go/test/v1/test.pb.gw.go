@@ -37,7 +37,7 @@ var (
 
 func request_HelloService_SayHi_0(ctx context.Context, marshaler runtime.Marshaler, client HelloServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq HelloRequest
+		protoReq SayHiRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -58,7 +58,7 @@ func request_HelloService_SayHi_0(ctx context.Context, marshaler runtime.Marshal
 
 func local_request_HelloService_SayHi_0(ctx context.Context, marshaler runtime.Marshaler, server HelloServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var (
-		protoReq HelloRequest
+		protoReq SayHiRequest
 		metadata runtime.ServerMetadata
 		err      error
 	)
@@ -86,7 +86,7 @@ func RegisterHelloServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/api.hello.HelloService/SayHi", runtime.WithHTTPPathPattern("/api/v1/say-hi/{name}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/test.v1.HelloService/SayHi", runtime.WithHTTPPathPattern("/api/v1/say-hi/{name}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -144,7 +144,7 @@ func RegisterHelloServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/api.hello.HelloService/SayHi", runtime.WithHTTPPathPattern("/api/v1/say-hi/{name}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/test.v1.HelloService/SayHi", runtime.WithHTTPPathPattern("/api/v1/say-hi/{name}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

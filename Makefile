@@ -4,10 +4,20 @@ FINAL_SPEC = $(SWAGGER_DIR)/city.swagger.json
 
 .PHONY: docs gen-proto merge-docs bundle-docs
 
-gen-proto:
-	buf generate
+proto: gen-proto
 
-merge-docs: gen-proto
+# То же, что проверяет CI: lint + актуальность api/gen
+proto-check:
+	buf lint
+	buf generate
+	@git add -N api/gen
+	@git diff --exit-code -- api/gen || (echo "api/gen устарел: выполните make proto и закоммитьте"; exit 1)
+
+# Сравнение с main (работает после слияния T008)
+proto-breaking:
+	buf breaking --against '.git#branch=main'
+
+merge-docs: proto
 	mkdir -p $(DOCS_DIR)
 	@echo "Converting Swagger 2.0 to OpenAPI 3.0..."
 	find $(SWAGGER_DIR) -name "*.swagger.json" -not -name "city.swagger.json" -exec npx -y swagger2openapi --patch --yaml --outfile {}.yaml {} \;
