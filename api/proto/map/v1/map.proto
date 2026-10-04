@@ -4,8 +4,8 @@ package map.v1;
 
 option go_package = "github.com/Fi44er/synthcity/api/gen/go/map/v1;mapv1";
 
-// import "google/api/annotations.proto";
-// import "buf/validate/validate.proto";
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
 
 service MapService {
     rpc GetRoute(GetRouteRequest) returns (GetRouteResponse) {

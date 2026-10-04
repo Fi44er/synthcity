@@ -22,27 +22,27 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type HelloRequest struct {
+type SayHiRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HelloRequest) Reset() {
-	*x = HelloRequest{}
+func (x *SayHiRequest) Reset() {
+	*x = SayHiRequest{}
 	mi := &file_test_v1_test_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HelloRequest) String() string {
+func (x *SayHiRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HelloRequest) ProtoMessage() {}
+func (*SayHiRequest) ProtoMessage() {}
 
-func (x *HelloRequest) ProtoReflect() protoreflect.Message {
+func (x *SayHiRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_test_v1_test_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -54,39 +54,39 @@ func (x *HelloRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HelloRequest.ProtoReflect.Descriptor instead.
-func (*HelloRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use SayHiRequest.ProtoReflect.Descriptor instead.
+func (*SayHiRequest) Descriptor() ([]byte, []int) {
 	return file_test_v1_test_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *HelloRequest) GetName() string {
+func (x *SayHiRequest) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-type HelloResponse struct {
+type SayHiResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *HelloResponse) Reset() {
-	*x = HelloResponse{}
+func (x *SayHiResponse) Reset() {
+	*x = SayHiResponse{}
 	mi := &file_test_v1_test_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *HelloResponse) String() string {
+func (x *SayHiResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*HelloResponse) ProtoMessage() {}
+func (*SayHiResponse) ProtoMessage() {}
 
-func (x *HelloResponse) ProtoReflect() protoreflect.Message {
+func (x *SayHiResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_test_v1_test_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -98,12 +98,12 @@ func (x *HelloResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use HelloResponse.ProtoReflect.Descriptor instead.
-func (*HelloResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use SayHiResponse.ProtoReflect.Descriptor instead.
+func (*SayHiResponse) Descriptor() ([]byte, []int) {
 	return file_test_v1_test_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *HelloResponse) GetMessage() string {
+func (x *SayHiResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -114,13 +114,13 @@ var File_test_v1_test_proto protoreflect.FileDescriptor
 
 const file_test_v1_test_proto_rawDesc = "" +
 	"\n" +
-	"\x12test/v1/test.proto\x12\tapi.hello\x1a\x1cgoogle/api/annotations.proto\"\"\n" +
-	"\fHelloRequest\x12\x12\n" +
+	"\x12test/v1/test.proto\x12\atest.v1\x1a\x1cgoogle/api/annotations.proto\"\"\n" +
+	"\fSayHiRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\")\n" +
-	"\rHelloResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2i\n" +
-	"\fHelloService\x12Y\n" +
-	"\x05SayHi\x12\x17.api.hello.HelloRequest\x1a\x18.api.hello.HelloResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/api/v1/say-hi/{name}B7Z5github.com/Fi44er/synthcity/api/gen/go/test/v1;testv1b\x06proto3"
+	"\rSayHiResponse\x12\x18\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2e\n" +
+	"\fHelloService\x12U\n" +
+	"\x05SayHi\x12\x15.test.v1.SayHiRequest\x1a\x16.test.v1.SayHiResponse\"\x1d\x82\xd3\xe4\x93\x02\x17\x12\x15/api/v1/say-hi/{name}B7Z5github.com/Fi44er/synthcity/api/gen/go/test/v1;testv1b\x06proto3"
 
 var (
 	file_test_v1_test_proto_rawDescOnce sync.Once
@@ -136,12 +136,12 @@ func file_test_v1_test_proto_rawDescGZIP() []byte {
 
 var file_test_v1_test_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_test_v1_test_proto_goTypes = []any{
-	(*HelloRequest)(nil),  // 0: api.hello.HelloRequest
-	(*HelloResponse)(nil), // 1: api.hello.HelloResponse
+	(*SayHiRequest)(nil),  // 0: test.v1.SayHiRequest
+	(*SayHiResponse)(nil), // 1: test.v1.SayHiResponse
 }
 var file_test_v1_test_proto_depIdxs = []int32{
-	0, // 0: api.hello.HelloService.SayHi:input_type -> api.hello.HelloRequest
-	1, // 1: api.hello.HelloService.SayHi:output_type -> api.hello.HelloResponse
+	0, // 0: test.v1.HelloService.SayHi:input_type -> test.v1.SayHiRequest
+	1, // 1: test.v1.HelloService.SayHi:output_type -> test.v1.SayHiResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

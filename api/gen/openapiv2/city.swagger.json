@@ -10,60 +10,19 @@
       "x-displayName": "VehicleService"
     },
     {
+      "name": "HelloService",
+      "x-displayName": "HelloService"
+    },
+    {
       "name": "TrafficService",
       "x-displayName": "TrafficService"
     },
     {
       "name": "MapService",
       "x-displayName": "MapService"
-    },
-    {
-      "name": "HelloService",
-      "x-displayName": "HelloService"
     }
   ],
   "paths": {
-    "/api/v1/map/route": {
-      "servers": [],
-      "post": {
-        "operationId": "MapService_GetRoute",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/v1GetRouteResponse"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/rpcStatus"
-                }
-              }
-            }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/v1GetRouteRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "tags": [
-          "MapService"
-        ]
-      }
-    },
     "/api/v1/say-hi/{name}": {
       "servers": [],
       "get": {
@@ -104,6 +63,181 @@
           "HelloService"
         ]
       }
+    },
+    "/api/v1/map/edge/weight": {
+      "servers": [],
+      "post": {
+        "operationId": "MapService_UpdateEdgeWeight",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v1UpdateEdgeWeightResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/rpcStatus"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/v1UpdateEdgeWeightRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": [
+          "MapService"
+        ]
+      }
+    },
+    "/api/v1/map/junction/{nodeId}": {
+      "servers": [],
+      "get": {
+        "operationId": "MapService_GetJunctionInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v1GetJunctionInfoResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/rpcStatus"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "nodeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "int64"
+            }
+          }
+        ],
+        "tags": [
+          "MapService"
+        ]
+      }
+    },
+    "/api/v1/map/node/nearest": {
+      "servers": [],
+      "get": {
+        "operationId": "MapService_GetNearestNode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v1GetNearestNodeResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/rpcStatus"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "location.lat",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "location.lon",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "tags": [
+          "MapService"
+        ]
+      }
+    },
+    "/api/v1/map/route": {
+      "servers": [],
+      "post": {
+        "operationId": "MapService_GetRoute",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v1GetRouteResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/rpcStatus"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/v1GetRouteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "tags": [
+          "MapService"
+        ]
+      }
     }
   },
   "components": {
@@ -135,6 +269,45 @@
           }
         }
       },
+      "helloHelloResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "v1GetJunctionInfoResponse": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "type": "string",
+            "format": "int64"
+          },
+          "type": {
+            "$ref": "#/components/schemas/v1JunctionType"
+          },
+          "connectedNodeIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "int64"
+            }
+          }
+        }
+      },
+      "v1GetNearestNodeResponse": {
+        "type": "object",
+        "properties": {
+          "nodeId": {
+            "type": "string",
+            "format": "int64"
+          },
+          "nodeLocation": {
+            "$ref": "#/components/schemas/v1LatLng"
+          }
+        }
+      },
       "v1GetRouteRequest": {
         "type": "object",
         "properties": {
@@ -154,8 +327,33 @@
             "items": {
               "$ref": "#/components/schemas/v1LatLng"
             }
+          },
+          "nodeIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "int64"
+            }
+          },
+          "distanceMeters": {
+            "type": "number",
+            "format": "double"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "format": "double"
           }
         }
+      },
+      "v1JunctionType": {
+        "type": "string",
+        "enum": [
+          "JUNCTION_TYPE_UNSPECIFIED",
+          "JUNCTION_TYPE_REGULAR",
+          "JUNCTION_TYPE_TRAFFIC_LIGHT",
+          "JUNCTION_TYPE_CROSSING"
+        ],
+        "default": "JUNCTION_TYPE_UNSPECIFIED"
       },
       "v1LatLng": {
         "type": "object",
@@ -170,11 +368,28 @@
           }
         }
       },
-      "helloHelloResponse": {
+      "v1UpdateEdgeWeightRequest": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string"
+          "fromNodeId": {
+            "type": "string",
+            "format": "int64"
+          },
+          "toNodeId": {
+            "type": "string",
+            "format": "int64"
+          },
+          "weightMultiplier": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "v1UpdateEdgeWeightResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
           }
         }
       }
@@ -188,6 +403,12 @@
       ]
     },
     {
+      "name": "test/v1/test.proto",
+      "tags": [
+        "HelloService"
+      ]
+    },
+    {
       "name": "traffic/v1/traffic.proto",
       "tags": [
         "TrafficService"
@@ -197,12 +418,6 @@
       "name": "map/v1/map.proto",
       "tags": [
         "MapService"
-      ]
-    },
-    {
-      "name": "test/v1/test.proto",
-      "tags": [
-        "HelloService"
       ]
     }
   ]
