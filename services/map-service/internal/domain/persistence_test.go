@@ -26,7 +26,11 @@ func writeMsgpack(t *testing.T, path string, v any) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer f.Close()
+	defer func() {
+		if err := f.Close(); err != nil {
+			t.Errorf("close file: %v", err)
+		}
+	}()
 	w := bufio.NewWriter(f)
 	if err := msgpack.NewEncoder(w).Encode(v); err != nil {
 		t.Fatal(err)
