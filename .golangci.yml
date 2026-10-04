@@ -1,0 +1,20 @@
+version: "2"
+
+linters:
+  default: standard        # errcheck, govet, staticcheck, ineffassign, unused
+  enable:
+    - misspell
+    - unconvert
+    - bodyclose
+  exclusions:
+    generated: lax
+    paths:
+      - api/gen            # сгенерированный код не линтим
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    paths:
+      - api/gen

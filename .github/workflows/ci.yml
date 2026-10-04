@@ -1,0 +1,148 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:        # ручной запуск кнопкой во вкладке Actions
+
+# По умолчанию — только чтение репозитория (принцип наименьших привилегий)
+permissions:
+  contents: read
+
+# Новый push в ту же ветку отменяет ещё идущий старый прогон — экономит минуты
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ───────────── 1. Статический анализ ─────────────
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read   # нужно для only-new-issues
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod   # версия Go берётся из go.mod; кэш modules и build включён по умолчанию
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          only-new-issues: true     # ругаться только на НОВЫЙ код; старые замечания не блокируют
+
+  # ───────────── 2. Сборка и тесты ─────────────
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: build (все пакеты и сервисы)
+        run: go build ./...
+
+      - name: test (-race, покрытие)
+        run: go test -race -cover -coverprofile=coverage.out ./...
+
+      - name: сводка покрытия
+        run: go tool cover -func=coverage.out | tail -n 1
+
+  # ───────────── 3. Protobuf-контракты ─────────────
+  proto:
+    name: proto
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0            # нужна история для buf breaking
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: buf lint (стиль и корректность proto)
+        run: buf lint
+
+      - name: buf breaking (не сломали ли обратную совместимость, сравнение с main)
+        if: github.event_name == 'pull_request'
+        run: buf breaking --against '.git#branch=origin/main'
+
+      - name: установить плагины генерации (версии = как в api/gen)
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.2
+          go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.29.0
+          go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.29.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: buf generate не должен менять api/gen
+        run: |
+          buf generate
+          git add -N api/gen            # учесть и новые файлы
+          if ! git diff --exit-code -- api/gen; then
+            echo "::error::api/gen устарел. Выполните 'make gen-proto' и закоммитьте результат."
+            exit 1
+          fi
+
+  # ───────────── 4. Сборка Docker-образов (без публикации) ─────────────
+  docker:
+    name: docker (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: api-gateway
+            path: services/api-gateway/cmd
+          - service: map-service
+            path: services/map-service/cmd
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: build (без push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deployments/docker-compose/dockerfiles/Dockerfile
+          build-args: SERVICE_PATH=${{ matrix.path }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  # ───────────── 5. Итоговая проверка ─────────────
+  # Именно её (одну!) делаем обязательной в защите ветки main.
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [lint, test, proto, docker]
+    runs-on: ubuntu-latest
+    steps:
+      - name: все job'ы успешны?
+        run: |
+          echo "Результаты: ${{ join(needs.*.result, ', ') }}"
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "::error::Есть упавшие или отменённые проверки"
+            exit 1
+          fi
