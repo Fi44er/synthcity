@@ -49,6 +49,11 @@ func New(cfg *config.Config) *App {
 			l.Fatal("Failed to load map from PBF", zap.Error(err))
 		}
 
+		st := staticProc.Stats()
+		l.Info("static objects found",
+			zap.Int("traffic_signals_found", st.TrafficSignals),
+			zap.Int("crossings_found", st.Crossings),
+		)
 		if err := graph.SaveBinary(binPath); err != nil {
 			l.Error("Failed to save binary cache", zap.Error(err))
 		} else {

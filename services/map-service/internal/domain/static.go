@@ -14,6 +14,7 @@ const (
 	TypeWater          StaticObjectType = "water"
 	TypeInfrastructure StaticObjectType = "infrastructure"
 	TypeTrafficLight   StaticObjectType = "traffic_light"
+	TypeCrossing       StaticObjectType = "crossing"
 )
 
 // StaticObject — универсальная модель для зданий, парков и т.д.
