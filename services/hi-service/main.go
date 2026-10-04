@@ -21,7 +21,7 @@ type server struct {
 	pb.UnimplementedHelloServiceServer
 }
 
-func (s *server) SayHi(ctx context.Context, in *pb.HelloRequest) (*pb.HelloResponse, error) {
+func (s *server) SayHi(ctx context.Context, in *pb.SayHiRequest) (*pb.SayHiResponse, error) {
 	l := logger.FromContext(ctx)
 
 	l.Info("Handling gRPC SayHi", zap.String("user_name", in.GetName()))
@@ -37,7 +37,7 @@ func (s *server) SayHi(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRespo
 
 	l.Error("Test")
 
-	return &pb.HelloResponse{Message: "Hi " + in.GetName() + " from gRPC Service!"}, nil
+	return &pb.SayHiResponse{Message: "Hi " + in.GetName() + " from gRPC Service!"}, nil
 }
 
 func main() {

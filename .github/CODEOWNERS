@@ -1,0 +1,8 @@
+# Владелец по умолчанию — все файлы
+*                @Fi44er
+
+# Когда появится команда, разделите по областям:
+# /services/map-service/        @owner-map
+# /services/simulation-service/ @owner-sim
+# /api/proto/                   @owner-api
+# /deployments/                 @owner-devops

@@ -1,0 +1,11 @@
+.git
+.github
+.env
+**/.env
+**/*.pbf
+**/*.pbf.bin
+coverage.out
+bin
+docs
+golden
+*.md
