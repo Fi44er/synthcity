@@ -63,6 +63,22 @@ func New(cfg *config.Config) *App {
 		l.Info("Graph loaded from binary cache")
 	}
 
+	// Временный лог, пока не настроен логгер
+	var lights, crossings int
+	for _, n := range graph.Nodes {
+		switch n.Type {
+		case domain.NodeTrafficLight:
+			lights++
+		case domain.NodeCrossing:
+			crossings++
+		}
+	}
+	l.Info("graph node types",
+		zap.Int("nodes_total", len(graph.Nodes)),
+		zap.Int("traffic_light_nodes", lights),
+		zap.Int("crossing_nodes", crossings),
+	)
+
 	mapSvc := service.NewMapService(graph)
 
 	handler := transport.NewHandler(mapSvc)

@@ -37,10 +37,10 @@ func NewStaticProcessor() *StaticProcessor {
 
 func (p *StaticProcessor) Stats() StaticStats { return p.stats }
 
-func (p *StaticProcessor) ProcessNode(n *osm.Node) {
+func (p *StaticProcessor) ProcessNode(n *osm.Node) *domain.StaticObject {
 	obj := classifyNode(n)
 	if obj == nil {
-		return
+		return nil
 	}
 
 	switch obj.Type {
@@ -49,6 +49,8 @@ func (p *StaticProcessor) ProcessNode(n *osm.Node) {
 	case domain.TypeCrossing:
 		p.stats.Crossings++
 	}
+
+	return obj
 
 	// TODO(T029): накапливать obj и сохранять в PostGIS пачками (p.repo.BulkSave).
 }
