@@ -14,6 +14,11 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	TrafficLightPenaltySec = 15.0
+	CrossingPenaltySec     = 3.0
+)
+
 type MapService struct {
 	graph *domain.RoadGraph
 }
@@ -82,9 +87,9 @@ func (s *MapService) GetRoute(ctx context.Context, startCoord, endCoord domain.C
 
 			switch s.graph.Nodes[edge.ToID].Type {
 			case domain.NodeTrafficLight:
-				penalty = 15.0
+				penalty = TrafficLightPenaltySec
 			case domain.NodeCrossing:
-				penalty = 3.0
+				penalty = CrossingPenaltySec
 			}
 			weightWithPenalty := edge.Weight + penalty
 			tentativeGScore := gScore[current] + weightWithPenalty

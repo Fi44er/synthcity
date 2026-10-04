@@ -57,11 +57,12 @@ func (l *Loader) LoadGraph(ctx context.Context) (*domain.RoadGraph, error) {
 		switch o := scanner.Object().(type) {
 		case *osm.Node:
 			rawNodes++
-			node := &domain.Node{
+			obj := l.staticProc.ProcessNode(o)
+			allNodeMeta[int64(o.ID)] = &domain.Node{
 				ID:    int64(o.ID),
 				Point: domain.Coord{Lat: o.Lat, Lon: o.Lon},
+				Type:  graphNodeType(obj),
 			}
-			allNodeMeta[int64(o.ID)] = node
 
 			l.staticProc.ProcessNode(o)
 
@@ -90,4 +91,18 @@ func (l *Loader) LoadGraph(ctx context.Context) (*domain.RoadGraph, error) {
 	telemetry.RecordMetrics(ctx, start, "map-service", "LoadGraph", "success")
 
 	return l.graphProc.graph, nil
+}
+
+func graphNodeType(obj *domain.StaticObject) domain.NodeType {
+	if obj == nil {
+		return domain.NodeRegular
+	}
+	switch obj.Type {
+	case domain.TypeTrafficLight:
+		return domain.NodeTrafficLight
+	case domain.TypeCrossing:
+		return domain.NodeCrossing
+	default:
+		return domain.NodeRegular
+	}
 }
