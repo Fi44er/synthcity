@@ -33,7 +33,7 @@ func TestClassifyNode(t *testing.T) {
 		{"старая схема crossing_ref", tags("highway", "crossing", "crossing_ref", "zebra"), false, domain.TypeCrossing, "zebra"},
 		{"светофор с тегом crossing остаётся светофором", tags("highway", "traffic_signals", "crossing", "traffic_signals"), false, domain.TypeTrafficLight, ""},
 		{"ЖД-переезд — не наш объект", tags("railway", "level_crossing"), true, "", ""},
-		{"опечатка в ключе не срабатывает", tags("highway", "traffic_signals"), true, "", ""},
+		{"опечатка в ключе не срабатывает", tags("Highway", "traffic_signals"), true, "", ""},
 		{"узел без тегов", nil, true, "", ""},
 		{"прочий highway-узел", tags("highway", "bus_stop"), true, "", ""},
 	}
