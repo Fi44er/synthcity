@@ -46,7 +46,8 @@ func Init(serviceName string, collectorAddr string) (func(), error) {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
 	return func() {
-		c, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		c, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
 		_ = tp.Shutdown(c)
 		_ = mp.Shutdown(c)
 		_ = lp.Shutdown(c)

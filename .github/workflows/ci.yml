@@ -84,6 +84,8 @@ jobs:
 
       - name: buf breaking (не сломали ли обратную совместимость, сравнение с main)
         if: github.event_name == 'pull_request'
+        env:
+          GIT_LFS_SKIP_SMUDGE: "1"
         run: buf breaking --against '.git#branch=origin/main'
 
       - name: установить плагины генерации (версии = как в api/gen)
